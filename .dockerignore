@@ -1,0 +1,15 @@
+**/node_modules
+**/.venv
+**/venv
+**/dist
+**/.angular
+**/__pycache__
+**/*.pyc
+backend/static
+backend/.env
+frontend/.env
+.git
+.github
+.claude
+*.log
+**/.DS_Store

@@ -1,8 +1,10 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from . import db
 from .config import settings
@@ -62,3 +64,33 @@ app.include_router(stats.router, prefix="/api")
 @app.get("/api/health", tags=["health"])
 async def health():
     return {"status": "ok", "environment": settings.environment}
+
+
+# ── Serve the built Angular SPA (single-service deployment) ────────────────────
+# When a built frontend is present, FastAPI serves it: real files are returned
+# directly and any unknown (non-/api) route falls back to index.html for the
+# Angular client-side router. This lets the whole app ship as one image.
+_STATIC_DIR = settings.static_dir or os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "static"
+)
+
+if os.path.isfile(os.path.join(_STATIC_DIR, "index.html")):
+    _INDEX = os.path.join(_STATIC_DIR, "index.html")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa(full_path: str):
+        if full_path.startswith("api"):
+            raise HTTPException(status_code=404, detail="Not found")
+        candidate = os.path.normpath(os.path.join(_STATIC_DIR, full_path))
+        # Guard against path traversal, then serve the file if it exists.
+        if (
+            full_path
+            and candidate.startswith(os.path.abspath(_STATIC_DIR))
+            and os.path.isfile(candidate)
+        ):
+            return FileResponse(candidate)
+        return FileResponse(_INDEX)
+else:
+    logging.getLogger("flowboard").info(
+        "No built frontend at %s — running API only.", _STATIC_DIR
+    )

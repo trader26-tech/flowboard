@@ -1,6 +1,6 @@
-// Runtime configuration — overrides the bundled default.
-// On Railway, set this to your backend service URL, e.g.
-//   window.__APP_CONFIG__ = { apiUrl: "https://your-backend.up.railway.app/api" };
+// Runtime API location. Same-origin "/api" works for the single-service deploy
+// (FastAPI serves this app) and for local dev (the Angular proxy forwards /api).
+// Only change this if you host the API on a different domain.
 window.__APP_CONFIG__ = {
-  apiUrl: "http://localhost:8090/api"
+  apiUrl: "/api"
 };

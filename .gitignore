@@ -23,3 +23,6 @@ frontend/.env
 
 # Scratch / runtime
 backend/e2e.db
+
+# Built SPA bundled into the backend image at deploy time
+backend/static/

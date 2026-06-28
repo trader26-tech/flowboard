@@ -23,6 +23,9 @@ class Settings(BaseSettings):
 
     # App
     environment: str = "development"
+    # Absolute path to the built Angular app (index.html + assets). When set and present,
+    # FastAPI serves the SPA so the whole app ships as one service. Defaults to backend/static.
+    static_dir: str = ""
     cors_origins: str = "http://localhost:4200"
     workday_start: str = "09:00"
     workday_hours: int = 10
