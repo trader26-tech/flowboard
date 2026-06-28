@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-white text-ink-900;
+}
+
+/* ── Reusable component classes ─────────────────────────────────────────────── */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-ink-300 focus-visible:ring-offset-1
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  /* Dark, neutral primary — the modern/Jira-Linear professional look */
+  .btn-primary { @apply btn bg-ink-900 text-white hover:bg-ink-800; }
+  .btn-ghost { @apply btn bg-transparent text-ink-600 hover:bg-ink-100; }
+  .btn-outline { @apply btn border border-ink-200 bg-white text-ink-700 hover:bg-ink-50; }
+  .btn-danger { @apply btn border border-rose-200 bg-white text-rose-600 hover:bg-rose-50; }
+  .btn-success { @apply btn bg-emerald-600 text-white hover:bg-emerald-700; }
+  .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+
+  .input {
+    @apply w-full rounded-md border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900
+           transition placeholder:text-ink-400 focus:border-ink-400 focus:outline-none
+           focus:ring-2 focus:ring-ink-100;
+  }
+  .label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-500; }
+
+  .card {
+    @apply rounded-xl border border-ink-200 bg-white shadow-sm;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium;
+  }
+  .section-title {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-ink-400;
+  }
+}
+
+/* ── CDK drag & drop ─────────────────────────────────────────────────────────── */
+.cdk-drag-preview {
+  @apply rounded-lg border border-ink-200 bg-white shadow-float;
+  box-sizing: border-box;
+}
+.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Thin scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 9999px; }
+*::-webkit-scrollbar-thumb:hover { background-color: #cbd5e1; }

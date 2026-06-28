@@ -1,0 +1,25 @@
+.DS_Store
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+backend/.env
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+frontend/.env
+
+# Editor / local tooling
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.claude/
+*.local
+
+# Scratch / runtime
+backend/e2e.db
