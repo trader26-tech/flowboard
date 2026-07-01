@@ -16,12 +16,12 @@ const PALETTE = [
   standalone: true,
   imports: [FormsModule],
   template: `
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-xl font-bold tracking-tight text-ink-900">Clients</h1>
+        <h2 class="text-base font-bold tracking-tight text-ink-900">Clients</h2>
         <p class="text-sm text-ink-500">Invite clients and pick a colour to identify their work everywhere.</p>
       </div>
-      <button class="btn-primary" (click)="openCreate()">＋ Invite client</button>
+      <button class="btn-primary btn-sm" (click)="openCreate()">＋ Invite client</button>
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

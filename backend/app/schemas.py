@@ -45,6 +45,15 @@ class ClientUpdate(BaseModel):
 
 
 # ── Tasks ─────────────────────────────────────────────────────────────────────
+class ProgressPoint(BaseModel):
+    """A single milestone/checkpoint within a task."""
+
+    id: str
+    label: str = Field(min_length=1, max_length=200)
+    done: bool = False
+    done_at: datetime | None = None
+
+
 class TaskCreate(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     description: str | None = None
@@ -57,6 +66,12 @@ class TaskUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     estimated_minutes: int | None = Field(default=None, ge=0)
+
+
+class ProgressUpdate(BaseModel):
+    """Replace a task's ordered checklist wholesale (admin only)."""
+
+    progress_points: list[ProgressPoint]
 
 
 class ScheduleEntry(BaseModel):
@@ -81,6 +96,20 @@ class CarryForwardRequest(BaseModel):
     task_ids: list[str] | None = None  # all incomplete past tasks if omitted
 
 
+class UrgentTaskRequest(BaseModel):
+    """Drop an urgent task at the front of the queue and start it immediately.
+
+    Either promote an existing task (``task_id``) or create a new one inline.
+    """
+
+    task_id: str | None = None
+    title: str | None = Field(default=None, max_length=300)
+    description: str | None = None
+    estimated_minutes: int | None = Field(default=None, ge=0)
+    client_id: str | None = None       # defaults to the admin (internal) when omitted
+    scheduled_date: date | None = None  # defaults to today
+
+
 class TaskOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -98,6 +127,7 @@ class TaskOut(BaseModel):
     actual_end: datetime | None
     proof_image_url: str | None
     completion_note: str | None
+    progress_points: list[ProgressPoint] = []
     created_at: datetime
     updated_at: datetime
 
@@ -105,6 +135,7 @@ class TaskOut(BaseModel):
     client_name: str | None = None
     client_color: str | None = None
     elapsed_seconds: int = 0          # live timer value at serialization time
+    progress_percent: int = 0         # 0-100, from checked progress points (or status)
     planned_start: datetime | None = None
     planned_end: datetime | None = None
 
@@ -115,11 +146,17 @@ class SettingsOut(BaseModel):
 
     workday_start: time
     workday_hours: int
+    admin_online: bool = False
+    admin_online_since: datetime | None = None
 
 
 class SettingsUpdate(BaseModel):
     workday_start: time | None = None
     workday_hours: int | None = Field(default=None, ge=1, le=24)
+
+
+class PresenceUpdate(BaseModel):
+    online: bool
 
 
 # ── Stats ─────────────────────────────────────────────────────────────────────

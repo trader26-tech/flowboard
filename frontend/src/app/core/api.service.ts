@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import {
   AppSettings,
   ClientStats,
+  ProgressPoint,
   ScheduleEntry,
   Task,
   TaskStatus,
@@ -47,6 +48,9 @@ export class ApiService {
   backlog(): Observable<Task[]> {
     return this.http.get<Task[]>(`${BASE}/tasks/backlog`);
   }
+  myTasks(): Observable<Task[]> {
+    return this.http.get<Task[]>(`${BASE}/tasks/mine`);
+  }
   daySchedule(date: string): Observable<Task[]> {
     return this.http.get<Task[]>(`${BASE}/tasks/schedule`, {
       params: new HttpParams().set('date', date),
@@ -74,6 +78,9 @@ export class ApiService {
   deleteTask(id: string): Observable<void> {
     return this.http.delete<void>(`${BASE}/tasks/${id}`);
   }
+  setProgress(id: string, points: ProgressPoint[]): Observable<Task> {
+    return this.http.patch<Task>(`${BASE}/tasks/${id}/progress`, { progress_points: points });
+  }
   scheduleTask(id: string, date: string, orderIndex?: number): Observable<Task> {
     return this.http.post<Task>(`${BASE}/tasks/${id}/schedule`, {
       scheduled_date: date,
@@ -88,6 +95,16 @@ export class ApiService {
       scheduled_date: date,
       entries,
     });
+  }
+  urgentTask(body: {
+    task_id?: string;
+    title?: string;
+    description?: string | null;
+    estimated_minutes?: number | null;
+    client_id?: string | null;
+    scheduled_date?: string;
+  }): Observable<Task[]> {
+    return this.http.post<Task[]>(`${BASE}/tasks/urgent`, body);
   }
   carryForward(targetDate: string, taskIds?: string[]): Observable<Task[]> {
     return this.http.post<Task[]>(`${BASE}/tasks/carry-forward`, {
@@ -114,6 +131,9 @@ export class ApiService {
   }
   updateSettings(body: Partial<AppSettings>): Observable<AppSettings> {
     return this.http.patch<AppSettings>(`${BASE}/settings`, body);
+  }
+  setPresence(online: boolean): Observable<AppSettings> {
+    return this.http.post<AppSettings>(`${BASE}/settings/presence`, { online });
   }
 
   // ── Stats ────────────────────────────────────────────────────────────────

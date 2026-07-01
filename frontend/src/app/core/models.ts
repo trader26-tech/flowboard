@@ -23,6 +23,13 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface ProgressPoint {
+  id: string;
+  label: string;
+  done: boolean;
+  done_at?: string | null;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -38,11 +45,13 @@ export interface Task {
   actual_end: string | null;
   proof_image_url: string | null;
   completion_note: string | null;
+  progress_points: ProgressPoint[];
   created_at: string;
   updated_at: string;
   client_name: string | null;
   client_color: string | null;
   elapsed_seconds: number;
+  progress_percent: number;
   planned_start: string | null;
   planned_end: string | null;
 }
@@ -63,6 +72,8 @@ export interface ClientStats {
 export interface AppSettings {
   workday_start: string; // "HH:MM:SS"
   workday_hours: number;
+  admin_online: boolean;
+  admin_online_since?: string | null;
 }
 
 export interface ScheduleEntry {
