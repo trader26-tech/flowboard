@@ -35,6 +35,8 @@ create table if not exists public.tasks (
   actual_end         timestamptz,
   proof_image_url    text,
   completion_note    text,
+  -- Ordered checklist of milestones: [{"id","label","done","done_at"}]. Drives the progress bar.
+  progress_points    jsonb not null default '[]'::jsonb,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
@@ -44,9 +46,12 @@ create index if not exists idx_tasks_status on public.tasks (status);
 
 -- ── App settings (singleton row, id = 1) ──────────────────────────────────────
 create table if not exists public.app_settings (
-  id            integer primary key,
-  workday_start time not null default '09:00',
-  workday_hours integer not null default 10
+  id                 integer primary key,
+  workday_start      time not null default '09:00',
+  workday_hours      integer not null default 10,
+  -- Admin presence: flipped from the app so clients see "online & working now".
+  admin_online       boolean not null default false,
+  admin_online_since timestamptz
 );
 
 -- Note on security: the backend uses the SERVICE ROLE key, which bypasses Row

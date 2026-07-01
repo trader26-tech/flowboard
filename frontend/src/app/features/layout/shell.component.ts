@@ -1,7 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
+import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
+import { ToastService } from '../../core/toast.service';
 import { contrastText } from '../../core/time.util';
 
 interface NavItem {
@@ -69,9 +71,29 @@ interface NavItem {
         <header class="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-ink-200 bg-white/90 px-4 backdrop-blur lg:px-7">
           <button class="btn-ghost px-2 lg:hidden" (click)="menuOpen.set(true)">☰</button>
           <div class="flex-1"></div>
-          <span class="chip border border-ink-200 bg-white text-ink-500">
-            {{ isAdmin() ? 'Admin' : 'Client' }}
-          </span>
+
+          @if (isAdmin()) {
+            <!-- Presence toggle: broadcasts "online & working now" to clients -->
+            <button
+              (click)="toggleOnline()"
+              [disabled]="presenceBusy()"
+              class="group flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:opacity-60"
+              [class]="online()
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                : 'border-ink-200 bg-white text-ink-500 hover:bg-ink-50'"
+              [title]="online() ? 'You are visible as online — click to go offline' : 'You appear offline — click to go online'"
+            >
+              <span class="relative flex h-2 w-2">
+                @if (online()) {
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                }
+                <span class="relative inline-flex h-2 w-2 rounded-full" [class]="online() ? 'bg-emerald-500' : 'bg-ink-300'"></span>
+              </span>
+              {{ online() ? 'Online' : 'Offline' }}
+            </button>
+          } @else {
+            <span class="chip border border-ink-200 bg-white text-ink-500">Client</span>
+          }
         </header>
         <main class="flex-1 px-4 py-6 lg:px-7 lg:py-7">
           <div class="mx-auto max-w-7xl">
@@ -82,19 +104,20 @@ interface NavItem {
     </div>
   `,
 })
-export class ShellComponent {
+export class ShellComponent implements OnInit {
   private auth = inject(AuthService);
+  private api = inject(ApiService);
+  private toast = inject(ToastService);
   private router = inject(Router);
 
   user = this.auth.user;
   isAdmin = this.auth.isAdmin;
   menuOpen = signal(false);
+  online = signal(false);
+  presenceBusy = signal(false);
 
   private adminNav: NavItem[] = [
     { label: 'Schedule', path: '/app/schedule', icon: '▦' },
-    { label: 'Backlog', path: '/app/backlog', icon: '☰' },
-    { label: 'Clients', path: '/app/clients', icon: '◍' },
-    { label: 'Dashboard', path: '/app/dashboard', icon: '▤' },
     { label: 'Settings', path: '/app/settings', icon: '⚙' },
   ];
   private clientNav: NavItem[] = [
@@ -111,7 +134,32 @@ export class ShellComponent {
   });
   textColor = computed(() => contrastText(this.user()?.color ?? '#6366f1'));
 
+  ngOnInit(): void {
+    if (this.isAdmin()) {
+      this.api.getSettings().subscribe((s) => this.online.set(!!s.admin_online));
+    }
+  }
+
+  toggleOnline(): void {
+    const next = !this.online();
+    this.presenceBusy.set(true);
+    this.api.setPresence(next).subscribe({
+      next: (s) => {
+        this.online.set(!!s.admin_online);
+        this.presenceBusy.set(false);
+        this.toast.success(next ? 'You are now online' : 'You are now offline');
+      },
+      error: (e) => {
+        this.presenceBusy.set(false);
+        this.toast.error(e?.error?.detail ?? 'Could not update presence');
+      },
+    });
+  }
+
   logout(): void {
+    if (this.isAdmin() && this.online()) {
+      this.api.setPresence(false).subscribe();
+    }
     this.auth.logout();
     this.router.navigate(['/login']);
   }

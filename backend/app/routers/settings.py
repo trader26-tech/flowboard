@@ -1,11 +1,11 @@
-from datetime import time
+from datetime import datetime, time, timezone
 
 from fastapi import APIRouter, Depends
 
 from .. import db
 from ..config import settings as app_config
 from ..deps import get_current_user, require_admin
-from ..schemas import SettingsOut, SettingsUpdate
+from ..schemas import PresenceUpdate, SettingsOut, SettingsUpdate
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -47,4 +47,15 @@ async def update_settings(payload: SettingsUpdate, _: dict = Depends(require_adm
         fields["workday_start"] = payload.workday_start.isoformat()
     if payload.workday_hours is not None:
         fields["workday_hours"] = payload.workday_hours
+    return await db.upsert_settings(fields)
+
+
+@router.post("/presence", response_model=SettingsOut)
+async def set_presence(payload: PresenceUpdate, _: dict = Depends(require_admin)):
+    """Flip the admin's online/working-now flag that clients can see."""
+    await get_or_create_settings()
+    fields: dict = {"admin_online": payload.online}
+    fields["admin_online_since"] = (
+        datetime.now(timezone.utc).isoformat() if payload.online else None
+    )
     return await db.upsert_settings(fields)

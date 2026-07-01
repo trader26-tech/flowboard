@@ -49,7 +49,23 @@ const STATUS_META: Record<TaskStatus, { label: string; cls: string }> = {
               </div>
               <h3 class="mt-2 font-semibold text-ink-900">{{ t.title }}</h3>
               @if (t.description) { <p class="mt-1 text-sm text-ink-500">{{ t.description }}</p> }
-              <p class="mt-2 text-xs text-ink-400">Estimate {{ fmt(t.estimated_minutes) }}</p>
+              <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-400">
+                <span>Estimate {{ fmt(t.estimated_minutes) }}</span>
+                @if (t.planned_end && t.status !== 'completed') {
+                  <span>🏁 Tentative finish <b class="text-ink-600">{{ eta(t) }}</b></span>
+                }
+              </div>
+              @if (t.progress_points.length && t.status !== 'completed') {
+                <div class="mt-2.5 max-w-sm">
+                  <div class="mb-1 flex items-center justify-between text-[11px] text-ink-500">
+                    <span>Progress</span>
+                    <span>{{ t.progress_percent }}% · {{ doneOf(t) }}</span>
+                  </div>
+                  <div class="h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
+                    <div class="h-full rounded-full bg-emerald-500 transition-all" [style.width.%]="t.progress_percent"></div>
+                  </div>
+                </div>
+              }
             </div>
 
             <div class="flex items-center gap-3">
@@ -97,11 +113,26 @@ export class MyTasksComponent implements OnInit {
     this.load();
   }
   load(): void {
-    this.api.listTasks().subscribe((t) => this.tasks.set(t));
+    this.api.myTasks().subscribe((t) => this.tasks.set(t));
   }
 
   meta(status: TaskStatus) {
     return STATUS_META[status];
+  }
+
+  doneOf(t: Task): string {
+    const pts = t.progress_points ?? [];
+    return `${pts.filter((p) => p.done).length}/${pts.length}`;
+  }
+
+  eta(t: Task): string {
+    if (!t.planned_end) return '';
+    const d = new Date(t.planned_end);
+    const sameDay = d.toDateString() === new Date().toDateString();
+    const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return sameDay
+      ? `today ${time}`
+      : `${d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}, ${time}`;
   }
 
   cancel(t: Task): void {

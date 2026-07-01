@@ -20,25 +20,14 @@ export const routes: Routes = [
           import('./features/admin/schedule.component').then((m) => m.ScheduleComponent),
       },
       {
-        path: 'backlog',
-        loadComponent: () =>
-          import('./features/admin/backlog.component').then((m) => m.BacklogComponent),
-      },
-      {
-        path: 'clients',
-        loadComponent: () =>
-          import('./features/admin/clients.component').then((m) => m.ClientsComponent),
-      },
-      {
-        path: 'dashboard',
-        loadComponent: () =>
-          import('./features/admin/dashboard.component').then((m) => m.DashboardComponent),
-      },
-      {
         path: 'settings',
         loadComponent: () =>
           import('./features/admin/settings.component').then((m) => m.SettingsComponent),
       },
+      // Legacy routes now folded elsewhere — keep redirects so old links don't 404.
+      { path: 'backlog', redirectTo: 'schedule', pathMatch: 'full' },
+      { path: 'dashboard', redirectTo: 'schedule', pathMatch: 'full' },
+      { path: 'clients', redirectTo: 'settings', pathMatch: 'full' },
     ],
   },
   {

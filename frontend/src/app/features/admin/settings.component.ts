@@ -3,36 +3,48 @@ import { FormsModule } from '@angular/forms';
 
 import { ApiService } from '../../core/api.service';
 import { ToastService } from '../../core/toast.service';
+import { ClientsComponent } from './clients.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ClientsComponent],
   template: `
     <div class="mb-6">
       <h1 class="text-xl font-bold tracking-tight text-ink-900">Settings</h1>
-      <p class="text-sm text-ink-500">Define the general shape of your working day. You can still work outside it.</p>
+      <p class="text-sm text-ink-500">Your working day and the clients you serve, all in one place.</p>
     </div>
 
-    <div class="card max-w-lg p-6">
-      <div class="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label class="label" for="start">Workday start</label>
-          <input id="start" type="time" class="input" [(ngModel)]="start" />
+    <!-- Working day -->
+    <section class="mb-8">
+      <h2 class="mb-3 text-base font-bold tracking-tight text-ink-900">Working day</h2>
+      <div class="card max-w-lg p-6">
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="label" for="start">Workday start</label>
+            <input id="start" type="time" class="input" [(ngModel)]="start" />
+          </div>
+          <div>
+            <label class="label" for="hours">Workday length (hours)</label>
+            <input id="hours" type="number" min="1" max="24" class="input" [(ngModel)]="hours" />
+          </div>
         </div>
-        <div>
-          <label class="label" for="hours">Workday length (hours)</label>
-          <input id="hours" type="number" min="1" max="24" class="input" [(ngModel)]="hours" />
+        <p class="mt-4 rounded-lg bg-ink-50 px-3 py-2 text-xs text-ink-500">
+          Your timeline starts at <b>{{ start }}</b> and targets <b>{{ hours }}h</b>. Tasks reflow from
+          this anchor — finishing early prepones the rest, finishing late postpones it.
+        </p>
+        <div class="mt-6 flex justify-end">
+          <button class="btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save settings' }}</button>
         </div>
       </div>
-      <p class="mt-4 rounded-lg bg-ink-50 px-3 py-2 text-xs text-ink-500">
-        Your timeline starts at <b>{{ start }}</b> and targets <b>{{ hours }}h</b>. Tasks reflow from
-        this anchor — finishing early prepones the rest, finishing late postpones it.
-      </p>
-      <div class="mt-6 flex justify-end">
-        <button class="btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save settings' }}</button>
-      </div>
-    </div>
+    </section>
+
+    <div class="mb-8 border-t border-ink-100"></div>
+
+    <!-- Clients -->
+    <section>
+      <app-clients />
+    </section>
   `,
 })
 export class SettingsComponent implements OnInit {
